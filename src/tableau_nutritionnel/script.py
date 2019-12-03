@@ -35,58 +35,6 @@ def get_nutrients_prediction(code):
         raise NotDownloadedError("Download error : an error occurred during OCR JSON download")
     else :
         return(nutrients)
-        
-def compare(dic1, dic2, marge_erreur = 0.1) :
-    """
-     Compare nutrients value inputed by a user with nutrients prediction
-       @ input  : dic1 {dictionnary} nutrients predicted by Robotoff
-                  dic2 {dictionnary} nutrients inputed by a user
-                  marge_erreur {int, float} (optionnal) tolerance range for the prediction, in portion of user inputed value
-       @ output : {dictionnary} Evaluation of every nutrient prediction with format { nutrient : (1 if prediction is correct, 0 if prediction is incorrect, -1 if we are lacking prediction or user input) }
-    """
-    dic = {}
-    
-    try :
-        dic["energy"] = int(dic2["energy_100g"]*(1-marge_erreur) <= float(dic1["nutrients"]["energy"][0]["value"]) <= dic2["energy_100g"]*(1+marge_erreur))
-    except KeyError :
-        dic["energy"] = -1
-     
-    try :
-        dic["protein"] = int(dic2["proteins_100g"]*(1-marge_erreur) <= float(dic1["nutrients"]["protein"][0]["value"]) <= dic2["proteins_100g"]*(1+marge_erreur))
-    except KeyError :
-        dic["protein"] = -1
-        
-    try : 
-        dic["carbohydrate"] = int(dic2["carbohydrates_100g"]*(1-marge_erreur) <= float(dic1["nutrients"]["carbohydrate"][0]["value"]) <= dic2["carbohydrates_100g"]*(1+marge_erreur))
-    except KeyError :
-        dic["carbohydrate"] = -1  
-        
-    try : 
-        dic["sugar"] = int(dic2["sugars_100g"]*(1-marge_erreur) <= float(dic1["nutrients"]["sugar"][0]["value"]) <= dic2["sugars_100g"]*(1+marge_erreur))
-    except KeyError :
-        dic["sugar"] = -1
-        
-    try : 
-        dic["salt"] = int(dic2["sodium_100g"]*(1-marge_erreur) <= float(dic1["nutrients"]["salt"][0]["value"]) <= dic2["sodium_100g"]*(1+marge_erreur))
-    except KeyError :
-        dic["salt"] = -1
-        
-    try : 
-        dic["fat"] = int(dic2["fat_100g"]*(1-marge_erreur) <= float(dic1["nutrients"]["fat"][0]["value"]) <= dic2["fat_100g"]*(1+marge_erreur))
-    except KeyError :
-        dic["fat"] = -1
-        
-    try : 
-        dic["saturated_fat"] = int(dic2["saturated-fat_100g"]*(1-marge_erreur) <= float(dic1["nutrients"]["saturated_fat"][0]["value"]) <= dic2["saturated-fat_100g"]*(1+marge_erreur))
-    except KeyError :
-        dic["saturated_fat"] = -1
-        
-    try : 
-        dic["fiber"] = int(dic2["fiber_100g"]*(1-marge_erreur) <= float(dic1["nutrients"]["fiber"][0]["value"]) <= dic2["fiber_100g"]*(1+marge_erreur))
-    except KeyError :
-        dic["fiber"] = -1
-        
-    return dic
     
 def format_prediction(dic1):
     """
@@ -107,7 +55,7 @@ def format_user_input(dic2) :
     """
     return([soft_pop(dic2, "energy_value", -1), soft_pop(dic2, "proteins_100g", -1), \
             soft_pop(dic2, "carbohydrates_100g", -1), soft_pop(dic2, "sugars_100g", -1), \
-            soft_pop(dic2, "sodium_100g", -1), soft_pop(dic2, "fat_100g", -1), \
+            soft_pop(dic2, "salt_100g", -1), soft_pop(dic2, "fat_100g", -1), \
             soft_pop(dic2, "saturated-fat_100g", -1), soft_pop(dic2, "fiber_100g", -1)])
         
 if __name__ == "__main__" :
@@ -171,6 +119,12 @@ if __name__ == "__main__" :
                         dic2["energy_value"] = int(float(dic2["energy_value"])/4.184)
                 except KeyError :
                     pass
+
+                print("prédiction")
+                print(dic1)
+                print("user input")
+                print(dic2)
+                print("\n")
 
                 for _index, nutriment in enumerate(nutriments_list) :
                     result.write(";".join([str(val)]+[nutriment]+[str(format_user_input(dic2)[_index])]+[str(format_prediction(dic1)[_index])])+"\n")
