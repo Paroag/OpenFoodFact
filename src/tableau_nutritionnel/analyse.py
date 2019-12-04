@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+
+from utils import soft_pop
             
 if __name__ == "__main__" :
 
@@ -22,12 +24,13 @@ if __name__ == "__main__" :
     df_result = pd.DataFrame(index = nutriments_list, columns = ["correct", "incorrect", "not predicted", "not specified"]).fillna(0)
 
     for index, row in df.iterrows():
+        marge_erreur = {"energy" : 1}
         if row["ground_truth"] == -1 :
             df_result["not specified"][row["nutriment"]] += 1
         elif row["predicted"] == -1 :
             df_result["not predicted"][row["nutriment"]] += 1
-        else :              
-            if row["ground_truth"] == row["predicted"] :
+        else :
+            if abs(row["ground_truth"] - row["predicted"]) <= soft_pop(marge_erreur, row["nutriment"], 0) :
                 df_result["correct"][row["nutriment"]] += 1
             else :
                 df_result["incorrect"][row["nutriment"]] += 1

@@ -3,8 +3,9 @@ import json
 import os
 import argparse
 import pandas as pd
+import numpy as np
 
-from utils import soft_pop
+from utils import soft_pop, unique
 
 from tqdm import tqdm 
 
@@ -62,7 +63,7 @@ if __name__ == "__main__" :
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-dir", required = True, help = "data directory")
-    parser.add_argument("--reprise", action='store_true', help = "set this option to pursue job on a uncompleted result.csv file")
+    parser.add_argument("--reprise", help = "set this option to pursue job on a uncompleted result.csv file")
     parser.add_argument("--verbose", action='store_true')
     args = parser.parse_args()
     arguments = args.__dict__
@@ -70,7 +71,7 @@ if __name__ == "__main__" :
     data_dir = arguments.pop("data_dir")
     if data_dir[-1] != "/" :
         data_dir += "/"
-    reprise = arguments.pop("reprise")
+    result_file = arguments.pop("reprise")
     verbose = arguments.pop("verbose")
     
     
@@ -85,13 +86,12 @@ if __name__ == "__main__" :
     mode_edition = "w"
     
     # Reprise on a previous incompleted job
-    if reprise :
+    if result_file   :
         mode_edition = "a"
-        done_ids = pd.read_csv("result.csv", sep = ";").code.tolist()
-        print(done_ids)
+        done_ids = [str(code) for code in unique(pd.read_csv(result_file, sep = ";").code.tolist())]
         while done_ids :
             if product_ids.pop(0) == done_ids[0] :
-                done_ids.pop(0)
+                last_id = done_ids.pop(0)
         
                 
     # perform comparison for every product and write down results in result.csv file
@@ -119,12 +119,6 @@ if __name__ == "__main__" :
                         dic2["energy_value"] = int(float(dic2["energy_value"])/4.184)
                 except KeyError :
                     pass
-
-                print("prédiction")
-                print(dic1)
-                print("user input")
-                print(dic2)
-                print("\n")
 
                 for _index, nutriment in enumerate(nutriments_list) :
                     result.write(";".join([str(val)]+[nutriment]+[str(format_user_input(dic2)[_index])]+[str(format_prediction(dic1)[_index])])+"\n")
